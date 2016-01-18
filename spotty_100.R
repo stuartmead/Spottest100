@@ -48,10 +48,18 @@ for (i in 1:nrow(items))
     print(paste("Song number:", i))
 }
 
-testItems <- items[order(-items$popularity),]
-testItems['ranking']<- NA
+rankedItems <- items[order(-items$popularity),]
+rankedItems['ranking']<- NA
 
-testItems$ranking <- ((testItems$popularity + 
-                      ((testItems$popularity-testItems$albumpopularity)/10))/52)*
-                      pmin(testItems$ageweeks,52)
-testItems <- testItems[order(-testItems$ranking),]
+rankedItems$ranking <- ((rankedItems$popularity + #absolute popularity as calculated by spotify 
+                         #Difference in popularity vs. album popularity in order to minimise the
+                         # effect a 'good' song can have on album plays. Divide by 10 because the 
+                         # number seemed nicer
+                         ((rankedItems$popularity-rankedItems$albumpopularity)/10))/
+                         #Try and normalise out the recency by averaging popularity over the year (52 weeks) 
+                         # and then multiplying by the age of the song. This should make songs that have been
+                         # played consistently over the year have a higher average, as opposed to one where the
+                         # popularity has been skewed by the 'recency' metric spotify uses.
+                        52)*pmin(rankedItems$ageweeks,52)
+#Order the list by score
+rankedItems <- rankedItems[order(-rankedItems$ranking),]
